@@ -1,11 +1,11 @@
-name: Deploy
+name: Build
 on:
   push:
     tags: ["main"]
 
 jobs:
-  deploy:
-    name: Deploy
+  build:
+    name: build
     runs-on: 'ubuntu-latest'
     steps:
       - uses: actions/checkout@v3
@@ -16,8 +16,8 @@ jobs:
           distribution: 'temurin'
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
-      - name: Deploy release
+      - name: Publish release
         run: ./gradlew -Dorg.gradle.parallel=true publish --no-daemon --stacktrace
         env:
-          PRIVATE_MAVEN_REPO_USERNAME: ${{ secrets.MAVEN_USERNAME }}
-          PRIVATE_MAVEN_REPO_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
+           PRIVATE_MAVEN_REPO_USERNAME: ${{ secrets.MAVEN_USERNAME }}
+           PRIVATE_MAVEN_REPO_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
