@@ -1,7 +1,7 @@
 name: Deploy
 on:
   push:
-    tags: ['v*']
+    tags: ['main']
 
 jobs:
   deploy:
