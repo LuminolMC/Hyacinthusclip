@@ -1,4 +1,4 @@
-package io.papermc.paperclip;
+package moe.luminolmc.hyacinthusclip;
 
 import java.io.BufferedReader;
 import java.io.IOException;

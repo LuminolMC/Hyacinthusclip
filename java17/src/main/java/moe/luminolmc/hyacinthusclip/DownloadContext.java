@@ -1,4 +1,4 @@
-package io.papermc.paperclip;
+package moe.luminolmc.hyacinthusclip;
 
 import java.io.IOException;
 import java.net.MalformedURLException;

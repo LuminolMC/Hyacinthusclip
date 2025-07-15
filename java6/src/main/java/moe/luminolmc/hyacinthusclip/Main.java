@@ -7,7 +7,7 @@
  * MIT License
  */
 
-package io.papermc.paperclip;
+package moe.luminolmc.hyacinthusclip;
 
 import java.lang.reflect.Method;
 
@@ -21,8 +21,8 @@ public final class Main {
         }
 
         try {
-            final Class<?> paperclipClass = Class.forName("io.papermc.paperclip.Paperclip");
-            final Method mainMethod = paperclipClass.getMethod("main", String[].class);
+            final Class<?> hyacinthusclipClazz = Class.forName("moe.luminolmc.hyacinthusclip.Hyacinthusclip");
+            final Method mainMethod = hyacinthusclipClazz.getMethod("main", String[].class);
             mainMethod.invoke(null, (Object) args);
         } catch (final Exception e) {
             e.printStackTrace();

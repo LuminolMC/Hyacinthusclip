@@ -12,7 +12,7 @@ subprojects {
     }
 }
 
-val mainClass = "io.papermc.paperclip.Main"
+val mainClass = "moe.luminolmc.hyacinthusclip.Main"
 
 tasks.jar {
     val java6Jar = project(":java6").tasks.named("jar")
@@ -31,6 +31,10 @@ tasks.jar {
     from(file("license.txt")) {
         into("META-INF/license")
         rename { "paperclip-LICENSE.txt" }
+    }
+    from(file("license.txt")) {
+        into("META-INF/license")
+        rename { "hyacinthusclip-LICENSE.txt" }
     }
     rename { name ->
         if (name.endsWith("-LICENSE.txt")) {
@@ -66,10 +70,10 @@ publishing {
             withoutBuildIdentifier()
 
             pom {
-                val repoPath = "PaperMC/Paperclip"
+                val repoPath = "LuminolMC/Hyacinthusclip"
                 val repoUrl = "https://github.com/$repoPath"
 
-                name.set("Paperclip")
+                name.set("Hyacinthusclip")
                 description.set(project.description)
                 url.set(repoUrl)
                 packaging = "jar"
@@ -94,6 +98,12 @@ publishing {
                         email.set("demonwav@gmail.com")
                         url.set("https://github.com/DemonWav")
                     }
+                    developer {
+                        id.set("MrHua269")
+                        name.set("MrHua269")
+                        email.set("mrhua269@gmail.com")
+                        url.set("https://github.com/MrHua269")
+                    }
                 }
 
                 scm {
@@ -105,15 +115,12 @@ publishing {
         }
 
         repositories {
-            val url = if (isSnapshot) {
-                "https://repo.papermc.io/repository/maven-snapshots/"
-            } else {
-                "https://repo.papermc.io/repository/maven-releases/"
-            }
-
-            maven(url) {
-                credentials(PasswordCredentials::class)
-                name = "paper"
+            maven("https://repo.menthamc.com/repository/maven-snapshots/") {
+                name = "MenthaMC"
+                credentials(PasswordCredentials::class) {
+                    username = System.getenv("PRIVATE_MAVEN_REPO_USERNAME")
+                    password = System.getenv("PRIVATE_MAVEN_REPO_PASSWORD")
+                }
             }
         }
     }

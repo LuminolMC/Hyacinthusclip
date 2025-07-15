@@ -1,10 +1,17 @@
-package io.papermc.paperclip;
+package moe.luminolmc.hyacinthusclip;
+
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringWriter;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
@@ -127,5 +134,21 @@ class Util {
             return dir;
         }
         return dir + "/";
+    }
+
+    public static String getCountryByIp() {
+        HttpClient client = HttpClient.newHttpClient();
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("http://ip-api.com/json/?fields=country"))
+                .build();
+
+        try {
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            JsonObject json = JsonParser.parseString(response.body()).getAsJsonObject();
+            return json.get("country").getAsString();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "Unknown";
+        }
     }
 }
