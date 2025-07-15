@@ -31,5 +31,5 @@ jobs:
         if: endsWith(steps.get_version.outputs.version, '-SNAPSHOT')
         run: ./gradlew -Dorg.gradle.parallel=true publish --no-daemon --stacktrace
         env:
-          ORG_GRADLE_PROJECT_paperUsername: ${{ secrets.DEPLOY_USER }}
-          ORG_GRADLE_PROJECT_paperPassword: ${{ secrets.DEPLOY_PASS }}
+          PRIVATE_MAVEN_REPO_USERNAME: ${{ secrets.MAVEN_USERNAME }}
+          PRIVATE_MAVEN_REPO_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
