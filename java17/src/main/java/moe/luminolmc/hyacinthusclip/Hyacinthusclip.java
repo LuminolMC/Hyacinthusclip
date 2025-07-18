@@ -51,7 +51,7 @@ public final class Hyacinthusclip {
         final var repoDir = Path.of(System.getProperty("bundlerRepoDir", ""));
 
         final PatchEntry[] patches = findPatches();
-        final DownloadContext downloadContext = findDownloadContext();
+        DownloadContext downloadContext = findDownloadContext(false);
         if (patches.length > 0 && downloadContext == null) {
             throw new IllegalArgumentException("patches.list file found without a corresponding original-url file");
         }
@@ -61,7 +61,18 @@ public final class Hyacinthusclip {
             try {
                 downloadContext.download(repoDir);
             } catch (final IOException e) {
-                throw Util.fail("Failed to download original jar", e);
+                System.out.println("Failed to download jar with auto matched download context! Trying using default download context");
+                downloadContext = findDownloadContext(true);
+
+                if (downloadContext == null) {
+                    throw new IllegalStateException("Default download context not found!");
+                }
+
+                try {
+                    downloadContext.download(repoDir);
+                }catch (IOException ex2) {
+                    throw Util.fail("Failed to download original jar", ex2);
+                }
             }
             baseFile = downloadContext.getOutputFile(repoDir);
         } else {
@@ -120,10 +131,10 @@ public final class Hyacinthusclip {
         return base;
     }
 
-    private static DownloadContext findDownloadContext() {
+    private static DownloadContext findDownloadContext(boolean ignoreCountry) {
         String line;
         try {
-            line = Util.readResourceText("/META-INF/" + getDownloadContextFileName(false));
+            line = Util.readResourceText("/META-INF/" + getDownloadContextFileName(ignoreCountry));
         } catch (final IOException e) {
             // other download source does not found
             try {
