@@ -1,5 +1,15 @@
 package moe.luminolmc.hyacinthusclip;
 
+import moe.luminolmc.hyacinthusclip.integrated.leavesclip.logger.Logger;
+import moe.luminolmc.hyacinthusclip.integrated.leavesclip.logger.SimpleLogger;
+import moe.luminolmc.hyacinthusclip.integrated.leavesclip.mixin.*;
+import org.leavesmc.plugin.mixin.condition.condition.ConditionChecker;
+import org.spongepowered.asm.launch.MixinBootstrap;
+import org.spongepowered.asm.mixin.FabricUtil;
+import org.spongepowered.asm.mixin.MixinEnvironment;
+import org.spongepowered.asm.mixin.Mixins;
+import org.spongepowered.asm.mixin.extensibility.IMixinConfig;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -7,16 +17,19 @@ import java.io.InputStreamReader;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
+import java.lang.reflect.Field;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
 public final class Hyacinthusclip {
+    private static final Logger leavesLogger = new SimpleLogger("main");
 
     public static void main(final String[] args) {
         if (Path.of("").toAbsolutePath().toString().contains("!")) {
@@ -27,23 +40,27 @@ public final class Hyacinthusclip {
         final URL[] classpathUrls = setupClasspath();
 
         final ClassLoader parentClassLoader = Hyacinthusclip.class.getClassLoader().getParent();
-        final URLClassLoader classLoader = new URLClassLoader(classpathUrls, parentClassLoader);
+        final URLClassLoader selectedClassLoader = getClassLoaderForServer(classpathUrls, parentClassLoader);
 
         final String mainClassName = findMainClass();
         System.out.println("Starting " + mainClassName);
 
+        bootstrap(mainClassName, selectedClassLoader, args);
+    }
+
+    private static void bootstrap(String mainClassName, ClassLoader selectedClassLoader, String... args) {
         final Thread runThread = new Thread(() -> {
             try {
-                final Class<?> mainClass = Class.forName(mainClassName, true, classLoader);
+                final Class<?> mainClass = Class.forName(mainClassName, true, selectedClassLoader);
                 final MethodHandle mainHandle = MethodHandles.lookup()
-                    .findStatic(mainClass, "main", MethodType.methodType(void.class, String[].class))
-                    .asFixedArity();
+                        .findStatic(mainClass, "main", MethodType.methodType(void.class, String[].class))
+                        .asFixedArity();
                 mainHandle.invoke((Object) args);
             } catch (final Throwable t) {
                 throw Util.sneakyThrow(t);
             }
         }, "ServerMain");
-        runThread.setContextClassLoader(classLoader);
+        runThread.setContextClassLoader(selectedClassLoader);
         runThread.start();
     }
 
@@ -108,6 +125,62 @@ public final class Hyacinthusclip {
             return PatchEntry.parse(new BufferedReader(new InputStreamReader(patchListStream)));
         } catch (final IOException e) {
             throw Util.fail("Failed to read patches.list file", e);
+        }
+    }
+
+    private static URLClassLoader getClassLoaderForServer(URL[] setupClasspathUrls, ClassLoader parentClassLoader) {
+        if (Boolean.getBoolean("leavesclip.enable.mixin")) {
+            overrideAsmVersion();
+            PluginResolver.extractMixins();
+            MixinJarResolver.resolveMixinJars();
+
+            System.setProperty("mixin.bootstrapService", MixinServiceKnotBootstrap.class.getName());
+            System.setProperty("mixin.service", MixinServiceKnot.class.getName());
+
+            final URL[] classpathUrls = Arrays.copyOf(setupClasspathUrls, setupClasspathUrls.length + MixinJarResolver.jarUrls.length);
+            System.arraycopy(MixinJarResolver.jarUrls, 0, classpathUrls, setupClasspathUrls.length, MixinJarResolver.jarUrls.length);
+
+            MixinServiceKnot.classLoader = Hyacinthusclip.class.getClassLoader();
+
+            MixinBootstrap.init();
+            MixinEnvironment.getDefaultEnvironment().setSide(MixinEnvironment.Side.SERVER);
+
+            var ret = new MixinURLClassLoader(classpathUrls, parentClassLoader);
+
+            ConditionChecker.setClassLoader(ret);
+            MixinServiceKnot.classLoader = ret;
+            Mixins.addConfiguration("mixin-extras.init.mixins.json");
+            MixinJarResolver.mixinConfigs.forEach(Mixins::addConfiguration);
+            decorateMixinConfigWithPluginId();
+            AccessWidenerManager.initAccessWidener(ret);
+
+            return ret;
+        } else {
+            return new URLClassLoader(setupClasspathUrls, parentClassLoader);
+        }
+    }
+
+    private static void decorateMixinConfigWithPluginId() {
+        Mixins.getConfigs().forEach(config -> {
+            String mixinConfigName = config.getName();
+            String pluginId = MixinJarResolver.getPluginId(mixinConfigName);
+            if (pluginId == null) return;
+
+            IMixinConfig mixinConfig = config.getConfig();
+            mixinConfig.decorate(FabricUtil.KEY_MOD_ID, pluginId);
+            mixinConfig.decorate(FabricUtil.KEY_COMPATIBILITY, FabricUtil.COMPATIBILITY_LATEST);
+        });
+    }
+
+    private static void overrideAsmVersion() {
+        try {
+            Class<?> asmClass = Class.forName("org.spongepowered.asm.util.asm.ASM");
+            Field minorVersionField = asmClass.getDeclaredField("implMinorVersion");
+            minorVersionField.setAccessible(true);
+            minorVersionField.setInt(null, 5);
+
+        } catch (Exception e) {
+            leavesLogger.error("Failed to override asm version", e);
         }
     }
 
