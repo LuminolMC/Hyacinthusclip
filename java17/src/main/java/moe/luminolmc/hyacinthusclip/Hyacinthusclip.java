@@ -39,7 +39,7 @@ public final class Hyacinthusclip {
 
         final URL[] classpathUrls = setupClasspath();
 
-        final ClassLoader parentClassLoader = Hyacinthusclip.class.getClassLoader().getParent();
+        final ClassLoader parentClassLoader = Hyacinthusclip.class.getClassLoader();
         final URLClassLoader selectedClassLoader = getClassLoaderForServer(classpathUrls, parentClassLoader);
 
         final String mainClassName = findMainClass();
