@@ -3,6 +3,7 @@ package moe.luminolmc.hyacinthusclip;
 import moe.luminolmc.hyacinthusclip.integrated.leavesclip.logger.Logger;
 import moe.luminolmc.hyacinthusclip.integrated.leavesclip.logger.SimpleLogger;
 import moe.luminolmc.hyacinthusclip.integrated.leavesclip.mixin.*;
+import moe.luminolmc.hyacinthusclip.integrated.leavesclip.mixin.plugins.condition.BuildInfoInjector;
 import org.leavesmc.plugin.mixin.condition.condition.ConditionChecker;
 import org.spongepowered.asm.launch.MixinBootstrap;
 import org.spongepowered.asm.mixin.FabricUtil;
@@ -130,6 +131,7 @@ public final class Hyacinthusclip {
 
     private static URLClassLoader getClassLoaderForServer(URL[] setupClasspathUrls, ClassLoader parentClassLoader) {
         if (Boolean.getBoolean("leavesclip.enable.mixin")) {
+            BuildInfoInjector.inject();
             overrideAsmVersion();
             PluginResolver.extractMixins();
             MixinJarResolver.resolveMixinJars();
