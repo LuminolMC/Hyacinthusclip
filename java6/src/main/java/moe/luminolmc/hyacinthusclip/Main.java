@@ -15,7 +15,7 @@ public final class Main {
 
     public static void main(final String[] args) {
         if (getJavaVersion() < 21) {
-            System.err.println("Minecraft 1.21 requires running the server with Java 21 or above. " +
+            System.err.println("Minecraft 1.20.6+ requires running the server with Java 21 or above. " +
                 "For information on how to update Java, see https://docs.papermc.io/misc/java-install");
             System.exit(1);
         }
