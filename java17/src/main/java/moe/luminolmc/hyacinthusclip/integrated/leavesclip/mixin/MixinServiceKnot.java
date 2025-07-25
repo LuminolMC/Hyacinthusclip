@@ -97,7 +97,7 @@ public class MixinServiceKnot implements IMixinService, IClassProvider, IClassBy
 
     @Override
     public String getName() {
-        return "hyacinthuslip";
+        return "hyacinthusclip";
     }
 
     @Override
