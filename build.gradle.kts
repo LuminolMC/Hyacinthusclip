@@ -115,7 +115,7 @@ publishing {
         }
 
         repositories {
-            maven("https://repo.menthamc.com/repository/maven-snapshots/") {
+            maven("https://repo.menthamc.org/repository/maven-snapshots/") {
                 name = "MenthaMC"
                 credentials(PasswordCredentials::class) {
                     username = System.getenv("PRIVATE_MAVEN_REPO_USERNAME")
