@@ -35,17 +35,17 @@ public class MixinJarResolver {
     private static URL @Nullable [] getMixinJarUrls() {
         try {
             return PluginResolver.leavesPluginMetas.stream()
-                .map(LeavesPluginMeta::getMixinJarFile)
-                .map(file -> {
-                    try {
-                        return file.toURI().toURL();
-                    } catch (MalformedURLException e) {
-                        logger.error("Failed to convert Jar file path: " + file.getName(), e);
-                        return null;
-                    }
-                })
-                .filter(Objects::nonNull)
-                .toArray(URL[]::new);
+                    .map(LeavesPluginMeta::getMixinJarFile)
+                    .map(file -> {
+                        try {
+                            return file.toURI().toURL();
+                        } catch (MalformedURLException e) {
+                            logger.error("Failed to convert Jar file path: " + file.getName(), e);
+                            return null;
+                        }
+                    })
+                    .filter(Objects::nonNull)
+                    .toArray(URL[]::new);
         } catch (Exception e) {
             logger.error("Error getting mixin jar URLs", e);
             return null;
@@ -54,12 +54,12 @@ public class MixinJarResolver {
 
     private static void resolveMixinConfigs() {
         var pluginMetaWithMixins = PluginResolver.leavesPluginMetas.stream()
-            .map(MixinJarResolver::withMixins)
-            .toList();
+                .map(MixinJarResolver::withMixins)
+                .toList();
         mixinConfigs = pluginMetaWithMixins.stream()
-            .map(Tuple2::second)
-            .flatMap(List::stream)
-            .toList();
+                .map(Tuple2::second)
+                .flatMap(List::stream)
+                .toList();
         pluginMetaWithMixins.forEach(entry -> {
             String id = entry.first().getName();
             entry.second().forEach(mixins -> mixinConfig2PluginId.put(mixins, id));
@@ -75,10 +75,10 @@ public class MixinJarResolver {
 
     private static void resolveAccessWidenerConfigs() {
         accessWidenerConfigs = PluginResolver.leavesPluginMetas.stream()
-            .map(LeavesPluginMeta::getMixin)
-            .map(LeavesPluginMeta.MixinConfig::getAccessWidener)
-            .filter(Objects::nonNull)
-            .filter(config -> !config.isEmpty())
-            .toList();
+                .map(LeavesPluginMeta::getMixin)
+                .map(LeavesPluginMeta.MixinConfig::getAccessWidener)
+                .filter(Objects::nonNull)
+                .filter(config -> !config.isEmpty())
+                .toList();
     }
 }

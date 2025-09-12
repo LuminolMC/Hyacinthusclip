@@ -11,34 +11,29 @@ package moe.luminolmc.hyacinthusclip;
 
 import io.sigpipe.jbsdiff.InvalidHeaderException;
 import io.sigpipe.jbsdiff.Patch;
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import org.apache.commons.compress.compressors.CompressorException;
+
+import java.io.*;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Map;
-import org.apache.commons.compress.compressors.CompressorException;
 
-import static java.nio.file.StandardOpenOption.CREATE;
-import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
-import static java.nio.file.StandardOpenOption.WRITE;
+import static java.nio.file.StandardOpenOption.*;
 
-record PatchEntry(
-    String location,
-    byte[] originalHash,
-    byte[] patchHash,
-    byte[] outputHash,
-    String originalPath,
-    String patchPath,
-    String outputPath
+public record PatchEntry(
+        String location,
+        byte[] originalHash,
+        byte[] patchHash,
+        byte[] outputHash,
+        String originalPath,
+        String patchPath,
+        String outputPath
 ) {
     private static boolean announced = false;
 
-    static PatchEntry[] parse(final BufferedReader reader) throws IOException {
+    public static PatchEntry[] parse(final BufferedReader reader) throws IOException {
         var result = new PatchEntry[8];
 
         int index = 0;
@@ -76,17 +71,17 @@ record PatchEntry(
         }
 
         return new PatchEntry(
-            parts[0],
-            Util.fromHex(parts[1]),
-            Util.fromHex(parts[2]),
-            Util.fromHex(parts[3]),
-            parts[4],
-            parts[5],
-            parts[6]
+                parts[0],
+                Util.fromHex(parts[1]),
+                Util.fromHex(parts[2]),
+                Util.fromHex(parts[3]),
+                parts[4],
+                parts[5],
+                parts[6]
         );
     }
 
-    void applyPatch(final Map<String, Map<String, URL>> urls, final Path originalRootDir, final Path repoDir) throws IOException {
+    public void applyPatch(final Map<String, Map<String, URL>> urls, final Path originalRootDir, final Path repoDir) throws IOException {
         final Path inputDir = originalRootDir.resolve("META-INF").resolve(this.location);
         final Path targetDir = repoDir.resolve(this.location);
 
@@ -101,7 +96,7 @@ record PatchEntry(
         }
 
         if (!announced) {
-            System.out.println("Applying patches");
+            Hyacinthusclip.logger.info("Applying patches");
             announced = true;
         }
 
@@ -130,12 +125,12 @@ record PatchEntry(
                 Files.createDirectories(outputFile.getParent());
             }
             try (
-                final OutputStream outStream =
-                    new BufferedOutputStream(Files.newOutputStream(outputFile, CREATE, WRITE, TRUNCATE_EXISTING))
+                    final OutputStream outStream =
+                            new BufferedOutputStream(Files.newOutputStream(outputFile, CREATE, WRITE, TRUNCATE_EXISTING))
             ) {
                 Patch.patch(originalBytes, patchBytes, outStream);
             }
-        } catch (final CompressorException | InvalidHeaderException | IOException e) {
+        } catch (final InvalidHeaderException | IOException | CompressorException e) {
             // Don't move this `catch` clause to the outer try-with-resources
             // the Util.fail method never returns, so `close()` would never get called
             throw Util.fail("Failed to patch " + inputFile, e);

@@ -3,11 +3,7 @@ package moe.luminolmc.hyacinthusclip;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StringWriter;
+import java.io.*;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -18,9 +14,9 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
-class Util {
-
-    private Util() {}
+public class Util {
+    private Util() {
+    }
 
     public static MessageDigest sha256Digest = getSha256Digest();
 
@@ -57,7 +53,7 @@ class Util {
         }
     }
 
-    static String readResourceText(final String path) throws IOException {
+    public static String readResourceText(final String path) throws IOException {
         final String p;
         if (path.startsWith("/")) {
             p = path;
@@ -81,6 +77,7 @@ class Util {
     static boolean isDataValid(final byte[] data, final byte[] hash) {
         return Arrays.equals(hash, sha256Digest.digest(data));
     }
+
     static boolean isFileValid(final Path file, final byte[] hash) {
         if (Files.exists(file)) {
             final byte[] fileBytes = readBytes(file);
@@ -115,17 +112,18 @@ class Util {
         return i;
     }
 
-    static RuntimeException fail(final String message, final Throwable err) {
-        System.err.println(message);
+    public static RuntimeException fail(final String message, final Throwable err) {
         if (err != null) {
-            err.printStackTrace();
+            Hyacinthusclip.logger.error(message, err);
+        } else {
+            Hyacinthusclip.logger.error(message);
         }
         System.exit(1);
         throw new InternalError();
     }
 
     @SuppressWarnings("unchecked")
-    static <X extends Throwable> RuntimeException sneakyThrow(final Throwable ex) throws X {
+    public static <X extends Throwable> RuntimeException sneakyThrow(final Throwable ex) throws X {
         throw (X) ex;
     }
 

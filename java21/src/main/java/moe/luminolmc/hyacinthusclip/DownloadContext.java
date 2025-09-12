@@ -10,11 +10,9 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static java.nio.file.StandardOpenOption.CREATE;
-import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
-import static java.nio.file.StandardOpenOption.WRITE;
+import static java.nio.file.StandardOpenOption.*;
 
-record DownloadContext(byte[] hash, URL url, String fileName) {
+public record DownloadContext(byte[] hash, URL url, String fileName) {
 
     public Path getOutputFile(final Path outputDir) {
         final Path cacheDir = outputDir.resolve("cache");
@@ -49,15 +47,15 @@ record DownloadContext(byte[] hash, URL url, String fileName) {
         }
         Files.deleteIfExists(outputFile);
 
-        System.out.println("Downloading " + this.fileName);
+        Hyacinthusclip.logger.info("Downloading {}", this.fileName);
 
         try (
-            final ReadableByteChannel source = Channels.newChannel(this.url.openStream());
-            final FileChannel fileChannel = FileChannel.open(outputFile, CREATE, WRITE, TRUNCATE_EXISTING)
+                final ReadableByteChannel source = Channels.newChannel(this.url.openStream());
+                final FileChannel fileChannel = FileChannel.open(outputFile, CREATE, WRITE, TRUNCATE_EXISTING)
         ) {
             fileChannel.transferFrom(source, 0, Long.MAX_VALUE);
         } catch (final IOException e) {
-            System.err.println("Failed to download " + this.fileName);
+            Hyacinthusclip.logger.error(e, "Failed to download {}", this.fileName);
             e.printStackTrace();
             System.exit(1);
         }
