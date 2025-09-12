@@ -16,11 +16,11 @@ val mainClass = "moe.luminolmc.hyacinthusclip.Main"
 
 tasks.jar {
     val java6Jar = project(":java6").tasks.named("jar")
-    val java17Jar = project(":java17").tasks.named("shadowJar")
-    dependsOn(java6Jar, java17Jar)
+    val java21Jar = project(":java21").tasks.named("shadowJar")
+    dependsOn(java6Jar, java21Jar)
 
     from(zipTree(java6Jar.map { it.outputs.files.singleFile }))
-    from(zipTree(java17Jar.map { it.outputs.files.singleFile }))
+    from(zipTree(java21Jar.map { it.outputs.files.singleFile }))
 
     manifest {
         attributes(
@@ -47,11 +47,11 @@ tasks.jar {
 
 val sourcesJar by tasks.registering(Jar::class) {
     val java6Sources = project(":java6").tasks.named("sourcesJar")
-    val java17Sources = project(":java17").tasks.named("sourcesJar")
-    dependsOn(java6Sources, java17Sources)
+    val java21Sources = project(":java21").tasks.named("sourcesJar")
+    dependsOn(java6Sources, java21Sources)
 
     from(zipTree(java6Sources.map { it.outputs.files.singleFile }))
-    from(zipTree(java17Sources.map { it.outputs.files.singleFile }))
+    from(zipTree(java21Sources.map { it.outputs.files.singleFile }))
 
     archiveClassifier.set("sources")
 }
