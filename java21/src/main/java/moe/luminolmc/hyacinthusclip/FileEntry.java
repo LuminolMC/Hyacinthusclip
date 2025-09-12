@@ -1,5 +1,7 @@
 package moe.luminolmc.hyacinthusclip;
 
+import moe.luminolmc.hyacinthusclip.integrated.leavesclip.mixin.MixinURLClassLoader;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -67,7 +69,7 @@ public record FileEntry(byte[] hash, String id, String path) {
         }
 
         final String filePath = Util.endingSlash(baseDir) + this.path;
-        InputStream fileStream = FileEntry.class.getResourceAsStream(filePath);
+        InputStream fileStream = MixinURLClassLoader.class.getResourceAsStream(filePath);
         if (fileStream == null) {
             // This file is not in our jar, but may be in the original
             if (originalRootDir == null) {

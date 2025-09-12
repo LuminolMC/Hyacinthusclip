@@ -2,6 +2,7 @@ package moe.luminolmc.hyacinthusclip;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import moe.luminolmc.hyacinthusclip.integrated.leavesclip.mixin.MixinURLClassLoader;
 
 import java.io.*;
 import java.net.URI;
@@ -60,7 +61,7 @@ public class Util {
         } else {
             p = "/" + path;
         }
-        final InputStream stream = Util.class.getResourceAsStream(p);
+        final InputStream stream = MixinURLClassLoader.class.getResourceAsStream(p);
         if (stream == null) {
             return null;
         }

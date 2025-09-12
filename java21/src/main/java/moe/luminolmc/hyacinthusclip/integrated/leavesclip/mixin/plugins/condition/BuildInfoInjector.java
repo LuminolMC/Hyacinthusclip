@@ -1,8 +1,8 @@
 package moe.luminolmc.hyacinthusclip.integrated.leavesclip.mixin.plugins.condition;
 
-import moe.luminolmc.hyacinthusclip.Hyacinthusclip;
 import moe.luminolmc.hyacinthusclip.integrated.leavesclip.logger.Logger;
 import moe.luminolmc.hyacinthusclip.integrated.leavesclip.logger.SimpleLogger;
+import moe.luminolmc.hyacinthusclip.integrated.leavesclip.mixin.MixinURLClassLoader;
 import org.leavesmc.plugin.mixin.condition.BuildInfoProvider;
 import org.leavesmc.plugin.mixin.condition.data.BuildInfo;
 
@@ -15,7 +15,7 @@ public class BuildInfoInjector {
 
     public static void inject() {
         String buildInfoString;
-        try (InputStream inputStream = Hyacinthusclip.class.getResourceAsStream("/META-INF/build-info")) {
+        try (InputStream inputStream = MixinURLClassLoader.class.getResourceAsStream("/META-INF/build-info")) {
             buildInfoString = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
         } catch (IOException e) {
             logger.error("Failed to read build info", e);

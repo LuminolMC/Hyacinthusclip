@@ -160,7 +160,7 @@ public final class Hyacinthusclip {
     }
 
     private static PatchEntry[] findPatches() {
-        final InputStream patchListStream = Hyacinthusclip.class.getResourceAsStream("/META-INF/patches.list");
+        final InputStream patchListStream = MixinURLClassLoader.class.getResourceAsStream("/META-INF/patches.list");
         if (patchListStream == null) {
             return new PatchEntry[0];
         }
@@ -229,7 +229,7 @@ public final class Hyacinthusclip {
     }
 
     private static FileEntry[] findFileEntries(final String fileName) {
-        final InputStream libListStream = Hyacinthusclip.class.getResourceAsStream("/META-INF/" + fileName);
+        final InputStream libListStream = MixinURLClassLoader.class.getResourceAsStream("/META-INF/" + fileName);
         if (libListStream == null) {
             return null;
         }
