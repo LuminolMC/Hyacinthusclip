@@ -4,6 +4,8 @@ import moe.luminolmc.hyacinthusclip.integrated.leavesclip.logger.Logger;
 import moe.luminolmc.hyacinthusclip.integrated.leavesclip.logger.SimpleLogger;
 import moe.luminolmc.hyacinthusclip.integrated.leavesclip.mixin.*;
 import moe.luminolmc.hyacinthusclip.integrated.leavesclip.mixin.plugins.condition.BuildInfoInjector;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.leavesmc.plugin.mixin.condition.condition.ConditionChecker;
 import org.spongepowered.asm.launch.MixinBootstrap;
 import org.spongepowered.asm.mixin.FabricUtil;
@@ -30,6 +32,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public final class Hyacinthusclip {
+    private static final boolean ENABLE_LEAVES_PLUGIN = Boolean.getBoolean("leavesclip.enable.mixin") || Boolean.getBoolean("hyacinthusclip.enable.mixin");
 
     public static final Logger logger = new SimpleLogger("Hyacinthusclip");
 
@@ -39,11 +42,21 @@ public final class Hyacinthusclip {
             System.exit(1);
         }
 
-        URLClassLoader classLoader;
         final URL[] setupClasspathUrls = setupClasspath();
+        final String mainClassName = findMainClass();
+        final ClassLoader classLoader = getClassLoaderForLaunch(setupClasspathUrls);
 
-        if (Boolean.getBoolean("leavesclip.enable.mixin")
-                || Boolean.getBoolean("hyacinthusclip.enable.mixin")) {
+
+        logger.info("Calling main method in server main class: " + mainClassName);
+        final Thread runThread = generateThread(args, mainClassName, classLoader);
+
+        runThread.start();
+    }
+
+    private static @NotNull ClassLoader getClassLoaderForLaunch(URL[] setupClasspathUrls) {
+        if (ENABLE_LEAVES_PLUGIN) {
+            logger.info("Leaves plugin has been enabled. Bootstrapping with mixin environment.");
+
             BuildInfoInjector.inject();
             overrideAsmVersion();
             PluginResolver.extractMixins();
@@ -61,37 +74,33 @@ public final class Hyacinthusclip {
             MixinBootstrap.init();
             MixinEnvironment.getDefaultEnvironment().setSide(MixinEnvironment.Side.SERVER);
 
-            classLoader = new MixinURLClassLoader(classpathUrls, parentClassLoader);
-            ConditionChecker.setClassLoader(classLoader);
+            var createdClassLoader = new MixinURLClassLoader(classpathUrls, parentClassLoader);
+
+            ConditionChecker.setClassLoader(createdClassLoader);
             Mixins.addConfiguration("mixin-extras.init.mixins.json");
-            MixinServiceKnot.classLoader = classLoader;
+            MixinServiceKnot.classLoader = createdClassLoader;
             MixinJarResolver.mixinConfigs.forEach(Mixins::addConfiguration);
-            decorateMixinConfigWithPluginId();
-            AccessWidenerManager.initAccessWidener(classLoader);
+            Mixins.getConfigs().forEach(config -> {
+                final String mixinConfigName = config.getName();
+                final String pluginId = MixinJarResolver.getPluginId(mixinConfigName);
+                if (pluginId == null) return;
+
+                final IMixinConfig mixinConfig = config.getConfig();
+
+                mixinConfig.decorate(FabricUtil.KEY_MOD_ID, pluginId);
+                mixinConfig.decorate(FabricUtil.KEY_COMPATIBILITY, FabricUtil.COMPATIBILITY_LATEST);
+            });
+
+            logger.info("Loading accesswideners");
+            AccessWidenerManager.initAccessWidener(createdClassLoader);
+
+            return createdClassLoader;
         } else {
-            classLoader = new URLClassLoader(setupClasspathUrls, Hyacinthusclip.class.getClassLoader().getParent());
+            return new URLClassLoader(setupClasspathUrls, Hyacinthusclip.class.getClassLoader().getParent());
         }
-
-        final String mainClassName = findMainClass();
-        logger.info("Starting " + mainClassName);
-
-        final Thread runThread = generateThread(args, mainClassName, classLoader);
-        runThread.start();
     }
 
-    private static void decorateMixinConfigWithPluginId() {
-        Mixins.getConfigs().forEach(config -> {
-            String mixinConfigName = config.getName();
-            String pluginId = MixinJarResolver.getPluginId(mixinConfigName);
-            if (pluginId == null) return;
-
-            IMixinConfig mixinConfig = config.getConfig();
-            mixinConfig.decorate(FabricUtil.KEY_MOD_ID, pluginId);
-            mixinConfig.decorate(FabricUtil.KEY_COMPATIBILITY, FabricUtil.COMPATIBILITY_LATEST);
-        });
-    }
-
-    private static Thread generateThread(Object args, String mainClassName, URLClassLoader classLoader) {
+    private static @NotNull Thread generateThread(Object args, String mainClassName, ClassLoader classLoader) {
         final Thread runThread = new Thread(() -> {
             try {
                 final Class<?> mainClass = Class.forName(mainClassName, true, classLoader);
@@ -103,11 +112,13 @@ public final class Hyacinthusclip {
                 throw Util.sneakyThrow(t);
             }
         }, "ServerMain");
+
         runThread.setContextClassLoader(classLoader);
+
         return runThread;
     }
 
-    private static URL[] setupClasspath() {
+    private static URL @NotNull [] setupClasspath() {
         final var repoDir = Path.of(System.getProperty("bundlerRepoDir", ""));
 
         final PatchEntry[] patches = findPatches();
@@ -159,7 +170,7 @@ public final class Hyacinthusclip {
         return urls;
     }
 
-    private static PatchEntry[] findPatches() {
+    private static PatchEntry @NotNull [] findPatches() {
         final InputStream patchListStream = MixinURLClassLoader.class.getResourceAsStream("/META-INF/patches.list");
         if (patchListStream == null) {
             return new PatchEntry[0];
@@ -184,7 +195,7 @@ public final class Hyacinthusclip {
         }
     }
 
-    private static String getDownloadContextFileName(boolean ignoreCountry) {
+    private static @NotNull String getDownloadContextFileName(boolean ignoreCountry) {
         final String country = Util.getCountryByIp();
         final String base = "download-context";
         final String customized = System.getProperty("hyacinthusclip.downloadContext");
@@ -228,7 +239,7 @@ public final class Hyacinthusclip {
         return findFileEntries("libraries.list");
     }
 
-    private static FileEntry[] findFileEntries(final String fileName) {
+    private static FileEntry @Nullable [] findFileEntries(final String fileName) {
         final InputStream libListStream = MixinURLClassLoader.class.getResourceAsStream("/META-INF/" + fileName);
         if (libListStream == null) {
             return null;
@@ -254,7 +265,7 @@ public final class Hyacinthusclip {
         }
     }
 
-    private static Map<String, Map<String, URL>> extractAndApplyPatches(final Path originalJar, final PatchEntry[] patches, final Path repoDir) {
+    private static @NotNull Map<String, Map<String, URL>> extractAndApplyPatches(final Path originalJar, final PatchEntry[] patches, final Path repoDir) {
         if (originalJar == null && patches.length > 0) {
             throw new IllegalArgumentException("Patch data found without patch target");
         }
@@ -268,7 +279,7 @@ public final class Hyacinthusclip {
         return urls;
     }
 
-    private static Map<String, Map<String, URL>> extractFiles(final PatchEntry[] patches, final Path originalJar, final Path repoDir) {
+    private static @NotNull Map<String, Map<String, URL>> extractFiles(final PatchEntry[] patches, final Path originalJar, final Path repoDir) {
         final var urls = new HashMap<String, Map<String, URL>>();
 
         try {
@@ -330,7 +341,7 @@ public final class Hyacinthusclip {
 
     private static void applyPatches(
             final Map<String, Map<String, URL>> urls,
-            final PatchEntry[] patches,
+            final PatchEntry @NotNull [] patches,
             final Path originalJar,
             final Path repoDir
     ) {
