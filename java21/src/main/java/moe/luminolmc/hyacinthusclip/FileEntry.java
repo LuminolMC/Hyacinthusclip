@@ -1,10 +1,13 @@
 package moe.luminolmc.hyacinthusclip;
 
+import moe.luminolmc.hyacinthusclip.downloader.Downloader;
 import moe.luminolmc.hyacinthusclip.integrated.leavesclip.mixin.MixinURLClassLoader;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
@@ -13,6 +16,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 import static java.nio.file.StandardOpenOption.*;
 
@@ -47,9 +51,9 @@ public record FileEntry(byte[] hash, String id, String path) {
         }
     }
 
-    public void extractFile(
+    public CompletableFuture<Void> downloadFromMvnRepo(
             final Map<String, URL> urls,
-            final PatchEntry[] patches,
+            final PatchEntry @NotNull [] patches,
             final String targetName,
             final Path originalRootDir,
             final String baseDir,
@@ -58,51 +62,26 @@ public record FileEntry(byte[] hash, String id, String path) {
         for (final PatchEntry patch : patches) {
             if (patch.location().equals(targetName) && patch.outputPath().equals(this.path)) {
                 // This file will be created from a patch
-                return;
+                return CompletableFuture.completedFuture(null);
             }
         }
 
         final Path outputFile = outputDir.resolve(this.path);
         if (Files.exists(outputFile) && Util.isFileValid(outputFile, this.hash)) {
             urls.put(this.path, outputFile.toUri().toURL());
-            return;
+            return CompletableFuture.completedFuture(null);
         }
 
-        final String filePath = Util.endingSlash(baseDir) + this.path;
-        InputStream fileStream = MixinURLClassLoader.class.getResourceAsStream(filePath);
-        if (fileStream == null) {
-            // This file is not in our jar, but may be in the original
-            if (originalRootDir == null) {
-                // no original jar was provided (we are not running in patcher mode)
-                // This is an invalid situation
-                throw new IllegalStateException(this.path + " not found in our jar, and no original jar provided");
+        final CompletableFuture<Void> task = new Downloader(this, outputFile, baseDir, true).download(Hyacinthusclip.DOWNLOAD_EXECUTOR);
+
+        return task.thenAccept(ret -> {
+            synchronized (urls) {
+                try {
+                    urls.put(this.path, outputFile.toUri().toURL());
+                } catch (MalformedURLException e) {
+                    throw new RuntimeException(e);
+                }
             }
-
-            final Path originalFile = originalRootDir.resolve(filePath);
-            if (Files.notExists(originalFile)) {
-                throw new IllegalStateException(this.path + " not found in our jar or in the original jar");
-            }
-
-            fileStream = Files.newInputStream(originalFile);
-        }
-
-        if (!Files.isDirectory(outputFile.getParent())) {
-            Files.createDirectories(outputFile.getParent());
-        }
-        Files.deleteIfExists(outputFile);
-
-        try (
-                final InputStream stream = fileStream;
-                final ReadableByteChannel inputChannel = Channels.newChannel(stream);
-                final FileChannel outputChannel = FileChannel.open(outputFile, CREATE, WRITE, TRUNCATE_EXISTING)
-        ) {
-            outputChannel.transferFrom(inputChannel, 0, Long.MAX_VALUE);
-        }
-
-        if (!Util.isFileValid(outputFile, this.hash)) {
-            throw new IllegalStateException("Hash check failed for extract filed " + outputFile);
-        }
-
-        urls.put(this.path, outputFile.toUri().toURL());
+        });
     }
 }

@@ -79,7 +79,7 @@ public class Util {
         return Arrays.equals(hash, sha256Digest.digest(data));
     }
 
-    static boolean isFileValid(final Path file, final byte[] hash) {
+    public static boolean isFileValid(final Path file, final byte[] hash) {
         if (Files.exists(file)) {
             final byte[] fileBytes = readBytes(file);
             return isDataValid(fileBytes, hash);
@@ -128,7 +128,7 @@ public class Util {
         throw (X) ex;
     }
 
-    static String endingSlash(final String dir) {
+    public static String endingSlash(final String dir) {
         if (dir.endsWith("/")) {
             return dir;
         }

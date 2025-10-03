@@ -30,9 +30,19 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 public final class Hyacinthusclip {
     private static final boolean ENABLE_LEAVES_PLUGIN = Boolean.getBoolean("leavesclip.enable.mixin") || Boolean.getBoolean("hyacinthusclip.enable.mixin");
+    public static final String[] ALIYUN_MAVEN_REPO_LINK_BASE = new String[] {
+            "https://maven.aliyun.com/repository/central",
+            "https://repo.papermc.io/repository/maven-public",
+            "https://repo.menthamc.org/repository/maven-public",
+            "https://repo.spongepowered.org/maven/"
+    };
+    public static final Executor DOWNLOAD_EXECUTOR = Executors.newCachedThreadPool();
 
     public static final Logger logger = new SimpleLogger("Hyacinthusclip");
 
@@ -334,9 +344,13 @@ public final class Hyacinthusclip {
         final String targetPath = "/META-INF/" + targetName;
         final Path targetDir = repoDir.resolve(targetName);
 
-        for (final FileEntry entry : entries) {
-            entry.extractFile(urls, patches, targetName, originalRootDir, targetPath, targetDir);
-        }
+        CompletableFuture.allOf(Arrays.stream(entries).map(entry -> {
+            try {
+                return entry.downloadFromMvnRepo(urls, patches, targetName, originalRootDir, targetPath, targetDir);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }).toArray(CompletableFuture[]::new)).join();
     }
 
     private static void applyPatches(
