@@ -67,7 +67,7 @@ public record FileEntry(byte[] hash, String id, String path) {
 
         Hyacinthusclip.logger.info("Downloading missing file " + this.id + " to " + outputFile + " .");
 
-        final @NotNull CompletableFuture<Path> task = new Downloader(this, outputDir, outputFile, baseDir, true).downloadOrLoad(Hyacinthusclip.DOWNLOAD_EXECUTOR);
+        final @NotNull CompletableFuture<Path> task = new Downloader(this, outputDir, outputFile, baseDir, originalRootDir, true).downloadOrLoad(Hyacinthusclip.DOWNLOAD_EXECUTOR);
 
         return task.thenAccept(ret -> {
             synchronized (urls) {

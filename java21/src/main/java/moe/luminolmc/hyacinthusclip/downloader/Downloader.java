@@ -22,7 +22,7 @@ import java.util.concurrent.Executor;
 
 import static java.nio.file.StandardOpenOption.*;
 
-public record Downloader(FileEntry entry, Path outputDir, Path outputFile, String baseDir, boolean useInternalIfFailed) {
+public record Downloader(FileEntry entry, Path outputDir, Path outputFile, String baseDir, Path originalRootDir, boolean useInternal) {
     private static final SimpleLogger logger = new SimpleLogger("Hyacinthusclip");
 
     @Contract("_ -> new")
@@ -32,18 +32,28 @@ public record Downloader(FileEntry entry, Path outputDir, Path outputFile, Strin
 
             final RuntimeException failed = new RuntimeException("All maven repo download attempts has been failed for library " + this.entry.id() + "!");
 
-            final String filePath = Util.endingSlash(this.baseDir) + this.entry.path();
-            InputStream fileStream = MixinURLClassLoader.class.getResourceAsStream(filePath);
-            if (fileStream != null && this.useInternalIfFailed) {
-                try {
+            try {
+                final String filePath = Util.endingSlash(this.baseDir) + this.entry.path();
+                InputStream fileStream = this.useInternal ? MixinURLClassLoader.class.getResourceAsStream(filePath) : null;
+                if (fileStream == null && this.useInternal) {
+                    if (this.originalRootDir != null) {
+                        final Path originalFile = originalRootDir.resolve(filePath);
+                        if (!Files.notExists(originalFile)) {
+                            fileStream = Files.newInputStream(originalFile);
+
+                        }
+                    }
+                }
+
+                if (fileStream != null) {
                     logger.info("Located target jar inside jar, loading.");
                     this.deleteIfInvalid();
                     this.write(fileStream);
                     logger.info("Loaded " + this.entry.id() + "from jar package locally.");
                     return this.outputFile;
-                }catch (Exception ex) {
-                    failed.addSuppressed(ex);
                 }
+            }catch (Exception ex) {
+                failed.addSuppressed(ex);
             }
 
             logger.info("Missing: " + this.entry.id() + ", downloading from maven repo.");
