@@ -1,24 +1,17 @@
 package moe.luminolmc.hyacinthusclip;
 
 import moe.luminolmc.hyacinthusclip.downloader.Downloader;
-import moe.luminolmc.hyacinthusclip.integrated.leavesclip.mixin.MixinURLClassLoader;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.channels.Channels;
-import java.nio.channels.FileChannel;
-import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-
-import static java.nio.file.StandardOpenOption.*;
 
 public record FileEntry(byte[] hash, String id, String path) {
 
@@ -74,7 +67,7 @@ public record FileEntry(byte[] hash, String id, String path) {
 
         Hyacinthusclip.logger.info("Downloading missing file " + this.id + " to " + outputFile + " .");
 
-        final @NotNull CompletableFuture<Path> task = new Downloader(this, outputDir, outputFile, baseDir, true).download(Hyacinthusclip.DOWNLOAD_EXECUTOR);
+        final @NotNull CompletableFuture<Path> task = new Downloader(this, outputDir, outputFile, baseDir, true).downloadOrLoad(Hyacinthusclip.DOWNLOAD_EXECUTOR);
 
         return task.thenAccept(ret -> {
             synchronized (urls) {

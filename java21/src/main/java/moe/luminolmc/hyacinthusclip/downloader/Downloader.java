@@ -26,9 +26,9 @@ public record Downloader(FileEntry entry, Path outputDir, Path outputFile, Strin
     private static final SimpleLogger logger = new SimpleLogger("Hyacinthusclip");
 
     @Contract("_ -> new")
-    public @NotNull CompletableFuture<Path> download(Executor worker) {
+    public @NotNull CompletableFuture<Path> downloadOrLoad(Executor worker) {
         return CompletableFuture.supplyAsync(() -> {
-            logger.info("Downloading: " + this.entry.id());
+            logger.info("Try loading : " + this.entry.id());
 
             final RuntimeException failed = new RuntimeException("All maven repo download attempts has been failed for library " + this.entry.id() + "!");
 
@@ -45,6 +45,8 @@ public record Downloader(FileEntry entry, Path outputDir, Path outputFile, Strin
                     failed.addSuppressed(ex);
                 }
             }
+
+            logger.info("Missing: " + this.entry.id() + ", downloading from maven repo.");
 
             try {
                 this.deleteIfInvalid();
