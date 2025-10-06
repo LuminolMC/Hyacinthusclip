@@ -5,89 +5,78 @@ import moe.luminolmc.hyacinthusclip.Hyacinthusclip;
 import moe.luminolmc.hyacinthusclip.Util;
 import moe.luminolmc.hyacinthusclip.integrated.leavesclip.logger.SimpleLogger;
 import moe.luminolmc.hyacinthusclip.integrated.leavesclip.mixin.MixinURLClassLoader;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
 import static java.nio.file.StandardOpenOption.*;
 
-public class Downloader {
+public record Downloader(FileEntry entry, Path outputDir, Path outputFile, String baseDir, boolean useInternalIfFailed) {
     private static final SimpleLogger logger = new SimpleLogger("Hyacinthusclip");
 
-    private final FileEntry entry;
-    private final String baseDir;
-    private final Path outputFile;
-    private final boolean useInternalIfFailed;
-
-    public Downloader(FileEntry entry, Path outputFile, String baseDir, boolean useInternalIfFailed) {
-        this.entry = entry;
-        this.outputFile = outputFile;
-        this.baseDir = baseDir;
-
-        this.useInternalIfFailed = useInternalIfFailed;
-    }
-
-    public CompletableFuture<Void> download(Executor worker) {
-        return CompletableFuture.runAsync(() -> {
+    @Contract("_ -> new")
+    public @NotNull CompletableFuture<Path> download(Executor worker) {
+        return CompletableFuture.supplyAsync(() -> {
             logger.info("Downloading: " + this.entry.id());
 
             final RuntimeException failed = new RuntimeException("All maven repo download attempts has been failed for library " + this.entry.id() + "!");
 
             final String filePath = Util.endingSlash(this.baseDir) + this.entry.path();
             InputStream fileStream = MixinURLClassLoader.class.getResourceAsStream(filePath);
-            if (fileStream != null) {
+            if (fileStream != null && this.useInternalIfFailed) {
                 try {
+                    logger.info("Located target jar inside jar, loading.");
+                    this.deleteIfInvalid();
                     this.write(fileStream);
+                    logger.info("Loaded " + this.entry.id() + "from jar package locally.");
+                    return this.outputFile;
                 }catch (Exception ex) {
                     failed.addSuppressed(ex);
                 }
-
-                logger.info("Loaded " + this.entry.id() + "from jar package locally.");
-                return;
             }
 
-            for (int i = 0; i < Hyacinthusclip.ALIYUN_MAVEN_REPO_LINK_BASE.length; i++) {
-                final String url = Hyacinthusclip.ALIYUN_MAVEN_REPO_LINK_BASE[i] + "/" + this.entry.path();
+            try {
+                this.deleteIfInvalid();
 
-                try {
-                    final URL urlObj = new URL(url);
-                    final HttpURLConnection connection = (HttpURLConnection) urlObj.openConnection();
-                    connection.setConnectTimeout(3000);
-                    connection.setRequestMethod("GET");
+                final MavenDependencyResolver resolver = new MavenDependencyResolver(
+                        (List.of(Arrays.stream(Hyacinthusclip.ALL_MAVEN_REPO_LINK_BASE).map(url -> new MavenDependencyResolver.MavenRepository(String.valueOf(url.hashCode()), url)).toArray(MavenDependencyResolver.MavenRepository[]::new))),
+                        this.outputDir
+                );
 
-                    this.write(connection.getInputStream());
-
-                    logger.info("Downloaded: " + url);
-                    return;
-                }catch (Exception ex) {
-                    failed.addSuppressed(ex);
-                }
+                resolver.downloadTo(this.entry.id(), this.outputFile);
+                return this.outputFile;
+            }catch (Exception ex) {
+                failed.addSuppressed(ex);
             }
 
             throw failed;
         }, worker);
     }
 
-    private void write(InputStream in) throws IOException {
+    private void deleteIfInvalid() throws IOException {
         if (!Files.isDirectory(this.outputFile.getParent())) {
             Files.createDirectories(this.outputFile.getParent());
         }
 
         Files.deleteIfExists(this.outputFile);
+    }
 
+    private void write(InputStream in) throws IOException {
         try (
                 final InputStream stream = in;
                 final ReadableByteChannel inputChannel = Channels.newChannel(stream);
-                final FileChannel outputChannel = FileChannel.open(outputFile, CREATE, WRITE, TRUNCATE_EXISTING)
+                final FileChannel outputChannel = FileChannel.open(this.outputFile, CREATE, WRITE, TRUNCATE_EXISTING)
         ) {
             outputChannel.transferFrom(inputChannel, 0, Long.MAX_VALUE);
         }

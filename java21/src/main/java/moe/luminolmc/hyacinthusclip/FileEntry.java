@@ -72,12 +72,14 @@ public record FileEntry(byte[] hash, String id, String path) {
             return CompletableFuture.completedFuture(null);
         }
 
-        final CompletableFuture<Void> task = new Downloader(this, outputFile, baseDir, true).download(Hyacinthusclip.DOWNLOAD_EXECUTOR);
+        Hyacinthusclip.logger.info("Downloading missing file " + this.id + " to " + outputFile + " .");
+
+        final @NotNull CompletableFuture<Path> task = new Downloader(this, outputDir, outputFile, baseDir, true).download(Hyacinthusclip.DOWNLOAD_EXECUTOR);
 
         return task.thenAccept(ret -> {
             synchronized (urls) {
                 try {
-                    urls.put(this.path, outputFile.toUri().toURL());
+                    urls.put(this.path, ret.toUri().toURL());
                 } catch (MalformedURLException e) {
                     throw new RuntimeException(e);
                 }

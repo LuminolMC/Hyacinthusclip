@@ -36,11 +36,11 @@ import java.util.concurrent.Executors;
 
 public final class Hyacinthusclip {
     private static final boolean ENABLE_LEAVES_PLUGIN = Boolean.getBoolean("leavesclip.enable.mixin") || Boolean.getBoolean("hyacinthusclip.enable.mixin");
-    public static final String[] ALIYUN_MAVEN_REPO_LINK_BASE = new String[] {
+    public static final String[] ALL_MAVEN_REPO_LINK_BASE = new String[] {
             "https://maven.aliyun.com/repository/central",
             "https://repo.papermc.io/repository/maven-public",
             "https://repo.menthamc.org/repository/maven-public",
-            "https://repo.spongepowered.org/maven/"
+            "https://repo.spongepowered.org/maven",
     };
     public static final Executor DOWNLOAD_EXECUTOR = Executors.newCachedThreadPool();
 
