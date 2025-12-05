@@ -16,7 +16,7 @@
 // This file contains code derived from fabric-loader under the Apache-2.0 license
 // Modified for Leavesclip: removed code related to fabric-loader environment and implemented our own functionality
 
-package moe.luminolmc.hyacinthusclip.integrated.leavesclip.mixin;
+package org.leavesmc.leavesclip.mixin;
 
 import org.spongepowered.asm.service.IMixinServiceBootstrap;
 
@@ -28,7 +28,7 @@ public class MixinServiceKnotBootstrap implements IMixinServiceBootstrap {
 
     @Override
     public String getServiceClassName() {
-        return "moe.luminolmc.hyacinthusclip.integrated.leavesclip.mixin.MixinServiceKnot";
+        return "org.leavesmc.leavesclip.mixin.MixinServiceKnot";
     }
 
     @Override

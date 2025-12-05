@@ -1,10 +1,10 @@
-package moe.luminolmc.hyacinthusclip.integrated.leavesclip.mixin;
+package org.leavesmc.leavesclip.mixin;
 
-import moe.luminolmc.hyacinthusclip.integrated.leavesclip.logger.Logger;
-import moe.luminolmc.hyacinthusclip.integrated.leavesclip.logger.SimpleLogger;
 import net.fabricmc.accesswidener.AccessWidener;
 import net.fabricmc.accesswidener.AccessWidenerClassVisitor;
 import net.fabricmc.accesswidener.AccessWidenerReader;
+import org.leavesmc.leavesclip.logger.Logger;
+import org.leavesmc.leavesclip.logger.SimpleLogger;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;

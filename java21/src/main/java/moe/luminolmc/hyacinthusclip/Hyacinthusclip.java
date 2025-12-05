@@ -1,11 +1,11 @@
 package moe.luminolmc.hyacinthusclip;
 
-import moe.luminolmc.hyacinthusclip.integrated.leavesclip.logger.Logger;
-import moe.luminolmc.hyacinthusclip.integrated.leavesclip.logger.SimpleLogger;
-import moe.luminolmc.hyacinthusclip.integrated.leavesclip.mixin.*;
-import moe.luminolmc.hyacinthusclip.integrated.leavesclip.mixin.plugins.condition.BuildInfoInjector;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.leavesmc.leavesclip.logger.Logger;
+import org.leavesmc.leavesclip.logger.SimpleLogger;
+import org.leavesmc.leavesclip.mixin.*;
+import org.leavesmc.leavesclip.mixin.plugins.condition.BuildInfoInjector;
 import org.leavesmc.plugin.mixin.condition.condition.ConditionChecker;
 import org.spongepowered.asm.launch.MixinBootstrap;
 import org.spongepowered.asm.mixin.FabricUtil;
@@ -36,7 +36,7 @@ import java.util.concurrent.Executors;
 
 public final class Hyacinthusclip {
     private static final boolean ENABLE_LEAVES_PLUGIN = Boolean.getBoolean("leavesclip.enable.mixin") || Boolean.getBoolean("hyacinthusclip.enable.mixin");
-    public static final String[] ALL_MAVEN_REPO_LINK_BASE = new String[] {
+    public static final String[] ALL_MAVEN_REPO_LINK_BASE = new String[]{
             "https://maven.aliyun.com/repository/central",
             "https://repo.papermc.io/repository/maven-public",
             "https://repo.menthamc.org/repository/maven-public",

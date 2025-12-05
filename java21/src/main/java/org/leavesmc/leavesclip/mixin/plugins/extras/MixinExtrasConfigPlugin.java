@@ -1,4 +1,4 @@
-package moe.luminolmc.hyacinthusclip.integrated.leavesclip.mixin.plugins.extras;
+package org.leavesmc.leavesclip.mixin.plugins.extras;
 
 import com.llamalad7.mixinextras.MixinExtrasBootstrap;
 import org.objectweb.asm.tree.ClassNode;

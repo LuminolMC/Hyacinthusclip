@@ -1,12 +1,12 @@
-package moe.luminolmc.hyacinthusclip.integrated.leavesclip.mixin;
+package org.leavesmc.leavesclip.mixin;
 
 import com.google.gson.annotations.SerializedName;
 
 import java.io.File;
 import java.util.List;
 
-import static moe.luminolmc.hyacinthusclip.integrated.leavesclip.mixin.PluginResolver.MIXINS_DIRECTORY;
-import static moe.luminolmc.hyacinthusclip.integrated.leavesclip.mixin.PluginResolver.MIXINS_JAR_SUFFIX;
+import static org.leavesmc.leavesclip.mixin.PluginResolver.MIXINS_DIRECTORY;
+import static org.leavesmc.leavesclip.mixin.PluginResolver.MIXINS_JAR_SUFFIX;
 
 @SuppressWarnings("unused")
 public class LeavesPluginMeta {
@@ -65,6 +65,10 @@ public class LeavesPluginMeta {
 
         public void setAccessWidener(String accessWidener) {
             this.accessWidener = accessWidener;
+        }
+
+        public boolean isValid() {
+            return packageName != null;
         }
     }
 }

@@ -11,8 +11,8 @@ package moe.luminolmc.hyacinthusclip;
 
 import io.sigpipe.jbsdiff.InvalidHeaderException;
 import io.sigpipe.jbsdiff.Patch;
-import moe.luminolmc.hyacinthusclip.integrated.leavesclip.mixin.MixinURLClassLoader;
 import org.apache.commons.compress.compressors.CompressorException;
+import org.leavesmc.leavesclip.mixin.MixinURLClassLoader;
 
 import java.io.*;
 import java.net.URL;

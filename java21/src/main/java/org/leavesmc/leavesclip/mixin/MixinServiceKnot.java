@@ -16,11 +16,11 @@
 // This file contains code derived from fabric-loader under the Apache-2.0 license
 // Modified for Leavesclip: removed code related to fabric-loader environment and implemented our own functionality
 
-package moe.luminolmc.hyacinthusclip.integrated.leavesclip.mixin;
+package org.leavesmc.leavesclip.mixin;
 
 import moe.luminolmc.hyacinthusclip.Hyacinthusclip;
-import moe.luminolmc.hyacinthusclip.integrated.leavesclip.logger.SimpleLogger;
 import org.jetbrains.annotations.NotNull;
+import org.leavesmc.leavesclip.logger.SimpleLogger;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.launch.platform.container.ContainerHandleURI;
@@ -97,7 +97,7 @@ public class MixinServiceKnot implements IMixinService, IClassProvider, IClassBy
 
     @Override
     public String getName() {
-        return "Hyacinthusclip";
+        return "Leavesclip";
     }
 
     @Override

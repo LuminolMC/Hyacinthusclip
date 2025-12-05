@@ -16,7 +16,7 @@
 // This file contains code derived from fabric-loader under the Apache-2.0 license
 // Modified for Leavesclip: removed code related to fabric-loader environment and implemented our own functionality
 
-package moe.luminolmc.hyacinthusclip.integrated.leavesclip.mixin;
+package org.leavesmc.leavesclip.mixin;
 
 import java.net.URISyntaxException;
 import java.net.URL;

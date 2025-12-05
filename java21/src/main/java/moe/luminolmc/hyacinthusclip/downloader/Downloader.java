@@ -3,10 +3,10 @@ package moe.luminolmc.hyacinthusclip.downloader;
 import moe.luminolmc.hyacinthusclip.FileEntry;
 import moe.luminolmc.hyacinthusclip.Hyacinthusclip;
 import moe.luminolmc.hyacinthusclip.Util;
-import moe.luminolmc.hyacinthusclip.integrated.leavesclip.logger.SimpleLogger;
-import moe.luminolmc.hyacinthusclip.integrated.leavesclip.mixin.MixinURLClassLoader;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.leavesmc.leavesclip.logger.SimpleLogger;
+import org.leavesmc.leavesclip.mixin.MixinURLClassLoader;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,7 +22,8 @@ import java.util.concurrent.Executor;
 
 import static java.nio.file.StandardOpenOption.*;
 
-public record Downloader(FileEntry entry, Path outputDir, Path outputFile, String baseDir, Path originalRootDir, boolean useInternal) {
+public record Downloader(FileEntry entry, Path outputDir, Path outputFile, String baseDir, Path originalRootDir,
+                         boolean useInternal) {
     private static final SimpleLogger logger = new SimpleLogger("Hyacinthusclip");
 
     @Contract("_ -> new")
@@ -52,7 +53,7 @@ public record Downloader(FileEntry entry, Path outputDir, Path outputFile, Strin
                     logger.info("Loaded " + this.entry.id() + "from jar package locally.");
                     return this.outputFile;
                 }
-            }catch (Exception ex) {
+            } catch (Exception ex) {
                 failed.addSuppressed(ex);
             }
 
@@ -68,7 +69,7 @@ public record Downloader(FileEntry entry, Path outputDir, Path outputFile, Strin
 
                 resolver.downloadTo(this.entry.id(), this.outputFile);
                 return this.outputFile;
-            }catch (Exception ex) {
+            } catch (Exception ex) {
                 failed.addSuppressed(ex);
             }
 

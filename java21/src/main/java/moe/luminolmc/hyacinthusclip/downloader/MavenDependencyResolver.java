@@ -1,16 +1,20 @@
 package moe.luminolmc.hyacinthusclip.downloader;
 
+import org.leavesmc.leavesclip.logger.SimpleLogger;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
-import javax.xml.parsers.*;
-
-import moe.luminolmc.hyacinthusclip.Hyacinthusclip;
-import moe.luminolmc.hyacinthusclip.integrated.leavesclip.logger.SimpleLogger;
-import org.w3c.dom.*;
 
 public class MavenDependencyResolver {
     private static final SimpleLogger logger = new SimpleLogger("MavenDependencyResolver");
@@ -19,6 +23,7 @@ public class MavenDependencyResolver {
     private static final int TIMEOUT = 30000;
 
     private static final Map<String, String> PACKAGING_TO_EXTENSION = new HashMap<>();
+
     static {
         PACKAGING_TO_EXTENSION.put("jar", "jar");
         PACKAGING_TO_EXTENSION.put("war", "war");

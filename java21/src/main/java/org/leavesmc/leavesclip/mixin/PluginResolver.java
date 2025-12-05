@@ -1,11 +1,11 @@
-package moe.luminolmc.hyacinthusclip.integrated.leavesclip.mixin;
+package org.leavesmc.leavesclip.mixin;
 
 import com.google.gson.Gson;
-import moe.luminolmc.hyacinthusclip.integrated.leavesclip.logger.Logger;
-import moe.luminolmc.hyacinthusclip.integrated.leavesclip.logger.SimpleLogger;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.leavesmc.leavesclip.logger.Logger;
+import org.leavesmc.leavesclip.logger.SimpleLogger;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -50,6 +50,7 @@ public class PluginResolver {
         File[] jarFiles = pluginsDir.listFiles((dir, name) -> name.toLowerCase().endsWith(".jar"));
         if (jarFiles == null || jarFiles.length == 0) return;
 
+        //noinspection DataFlowIssue
         leavesPluginMetas = Arrays.stream(jarFiles)
                 .parallel()
                 .map(PluginResolver::withJarFile)
@@ -170,6 +171,11 @@ public class PluginResolver {
         File pluginFile = entry.first();
         JarFile jarFile = entry.second();
         LeavesPluginMeta pluginMeta = entry.third();
+
+        if (pluginMeta.getMixin() == null || !pluginMeta.getMixin().isValid()) {
+            return null;
+        }
+
         File mixinJarFile = pluginMeta.getMixinJarFile();
 
         String pluginJarHash = calcMd5(pluginFile);

@@ -2,7 +2,7 @@ package moe.luminolmc.hyacinthusclip;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import moe.luminolmc.hyacinthusclip.integrated.leavesclip.mixin.MixinURLClassLoader;
+import org.leavesmc.leavesclip.mixin.MixinURLClassLoader;
 
 import java.io.*;
 import java.net.URI;

@@ -1,10 +1,10 @@
-package moe.luminolmc.hyacinthusclip.integrated.leavesclip.mixin;
+package org.leavesmc.leavesclip.mixin;
 
-import moe.luminolmc.hyacinthusclip.integrated.leavesclip.logger.Logger;
-import moe.luminolmc.hyacinthusclip.integrated.leavesclip.logger.SimpleLogger;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.leavesmc.leavesclip.logger.Logger;
+import org.leavesmc.leavesclip.logger.SimpleLogger;
 
 import java.net.MalformedURLException;
 import java.net.URL;

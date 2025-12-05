@@ -1,4 +1,4 @@
-package moe.luminolmc.hyacinthusclip.integrated.leavesclip.logger;
+package org.leavesmc.leavesclip.logger;
 
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.logging.Level;
