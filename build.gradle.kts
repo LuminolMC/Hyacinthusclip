@@ -115,7 +115,13 @@ publishing {
         }
 
         repositories {
-            maven("https://repo.menthamc.org/repository/maven-snapshots/") {
+            val url = if (isSnapshot) {
+                "https://repo.menthamc.org/repository/maven-snapshots/"
+            } else {
+                "https://repo.menthamc.org/repository/maven-releases/"
+            }
+
+            maven(url) {
                 name = "MenthaMC"
                 credentials(PasswordCredentials::class) {
                     username = System.getenv("PRIVATE_MAVEN_REPO_USERNAME")
