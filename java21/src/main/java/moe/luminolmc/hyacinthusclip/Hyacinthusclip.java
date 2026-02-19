@@ -209,15 +209,22 @@ public final class Hyacinthusclip {
         final String base = "download-context";
         final String customized = System.getProperty("hyacinthusclip.downloadContext");
 
-        if (ignoreCountry || ignoreCountry.equlas("null")) {
+        // the retry attempt used this
+        if (ignoreCountry) {
             return base;
         }
-        
-        final String country = Util.getCountryByIp();
+     
         if (customized != null) {
+            // user requires use default download source
+            if (customized.equlas("null")) {
+                return base;
+            }
+            
             return customized;
         }
 
+        // fetch location and determine which to use
+        final String country = Util.getCountryByIp();
         if (country.equals("China")) {
             return base + "-cn";
         }
