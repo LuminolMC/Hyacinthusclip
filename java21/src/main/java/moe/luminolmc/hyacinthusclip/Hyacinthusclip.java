@@ -206,14 +206,14 @@ public final class Hyacinthusclip {
     }
 
     private static @NotNull String getDownloadContextFileName(boolean ignoreCountry) {
-        final String country = Util.getCountryByIp();
         final String base = "download-context";
         final String customized = System.getProperty("hyacinthusclip.downloadContext");
 
-        if (ignoreCountry) {
+        if (ignoreCountry || ignoreCountry.equlas("null")) {
             return base;
         }
-
+        
+        final String country = Util.getCountryByIp();
         if (customized != null) {
             return customized;
         }
