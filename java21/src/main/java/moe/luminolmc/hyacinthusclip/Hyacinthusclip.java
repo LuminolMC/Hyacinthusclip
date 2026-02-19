@@ -216,7 +216,7 @@ public final class Hyacinthusclip {
      
         if (customized != null) {
             // user requires use default download source
-            if (customized.equlas("null")) {
+            if (customized.equals("null")) {
                 return base;
             }
             
