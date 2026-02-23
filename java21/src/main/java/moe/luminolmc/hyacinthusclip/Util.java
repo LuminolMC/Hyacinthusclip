@@ -136,18 +136,31 @@ public class Util {
     }
 
     public static String getCountryByIp() {
-        try {
-            HttpClient client = HttpClient.newHttpClient();
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create("http://ip-api.com/json/?fields=country"))
-                    .build();
+        HttpClient client = HttpClient.newHttpClient();
+        String[] apis = {
+            "http://ipinfo.io/country",
+            "http://ip-api.com/json/?fields=country"
+        };
+        
+        for (String api : apis) {
+            try {
+                HttpRequest request = HttpRequest.newBuilder()
+                        .uri(URI.create(api))
+                        .timeout(java.time.Duration.ofSeconds(5))
+                        .build();
 
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            JsonObject json = JsonParser.parseString(response.body()).getAsJsonObject();
-            return json.get("country").getAsString();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return "Unknown";
+                HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+                
+                if (api.contains("ipinfo.io")) {
+                    return response.body().trim();
+                } else if (api.contains("ip-api.com")) {
+                    JsonObject json = JsonParser.parseString(response.body()).getAsJsonObject();
+                    return json.get("country").getAsString();
+                }
+            } catch (Exception e) {
+                continue;
+            }
         }
+        return "Unknown";
     }
 }
