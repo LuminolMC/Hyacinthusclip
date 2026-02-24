@@ -1,14 +1,8 @@
 package moe.luminolmc.hyacinthusclip;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import org.leavesmc.leavesclip.mixin.MixinURLClassLoader;
 
 import java.io.*;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
@@ -133,34 +127,5 @@ public class Util {
             return dir;
         }
         return dir + "/";
-    }
-
-    public static String getCountryByIp() {
-        HttpClient client = HttpClient.newHttpClient();
-        String[] apis = {
-            "http://ipinfo.io/country",
-            "http://ip-api.com/json/?fields=country"
-        };
-        
-        for (String api : apis) {
-            try {
-                HttpRequest request = HttpRequest.newBuilder()
-                        .uri(URI.create(api))
-                        .timeout(java.time.Duration.ofSeconds(5))
-                        .build();
-
-                HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-                
-                if (api.contains("ipinfo.io")) {
-                    return response.body().trim();
-                } else if (api.contains("ip-api.com")) {
-                    JsonObject json = JsonParser.parseString(response.body()).getAsJsonObject();
-                    return json.get("country").getAsString();
-                }
-            } catch (Exception e) {
-                continue;
-            }
-        }
-        return "Unknown";
     }
 }

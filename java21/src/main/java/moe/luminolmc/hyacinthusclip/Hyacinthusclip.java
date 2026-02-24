@@ -213,19 +213,21 @@ public final class Hyacinthusclip {
         if (ignoreCountry) {
             return base;
         }
-     
+
         if (customized != null) {
             // user requires use default download source
             if (customized.equals("null")) {
                 return base;
             }
-            
+
             return customized;
         }
 
         // fetch location and determine which to use
-        final String country = Util.getCountryByIp();
-        if (country.equals("China")) {
+        final String country = IPUtil.getCountryByIp();
+        if (country.equalsIgnoreCase("China")
+                || country.equalsIgnoreCase("CN")
+                || country.equalsIgnoreCase("PRC")) {
             return base + "-cn";
         }
 
