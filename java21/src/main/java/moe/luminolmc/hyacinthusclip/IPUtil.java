@@ -7,6 +7,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.Duration;
 
 class IPUtil {
     protected static String getCountryByIp() {
@@ -33,6 +34,7 @@ class IPUtil {
     private static HttpRequest createRequest(String url) {
         return HttpRequest.newBuilder()
                 .uri(URI.create(url))
+                .timeout(Duration.ofSeconds(5))
                 .build();
     }
 
