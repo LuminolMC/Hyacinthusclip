@@ -11,8 +11,8 @@ package moe.luminolmc.hyacinthusclip;
 
 import io.sigpipe.jbsdiff.InvalidHeaderException;
 import io.sigpipe.jbsdiff.Patch;
+import moe.luminolmc.hyacinthusclip.update.AutoUpdate;
 import org.apache.commons.compress.compressors.CompressorException;
-import org.leavesmc.leavesclip.mixin.MixinURLClassLoader;
 
 import java.io.*;
 import java.net.URL;
@@ -111,7 +111,7 @@ public record PatchEntry(
 
         // Get and verity patch data is correct
         final String fullPatchPath = "/META-INF/" + Util.endingSlash(this.location) + this.patchPath;
-        final InputStream patchStream = MixinURLClassLoader.class.getResourceAsStream(fullPatchPath);
+        final InputStream patchStream = AutoUpdate.getResourceAsStreamFromTargetJar(fullPatchPath);
         if (patchStream == null) {
             throw new IllegalStateException("Patch file not found: " + fullPatchPath);
         }

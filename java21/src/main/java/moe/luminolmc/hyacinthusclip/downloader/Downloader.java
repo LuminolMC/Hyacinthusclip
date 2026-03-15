@@ -3,10 +3,10 @@ package moe.luminolmc.hyacinthusclip.downloader;
 import moe.luminolmc.hyacinthusclip.FileEntry;
 import moe.luminolmc.hyacinthusclip.Hyacinthusclip;
 import moe.luminolmc.hyacinthusclip.Util;
+import moe.luminolmc.hyacinthusclip.update.AutoUpdate;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.leavesmc.leavesclip.logger.SimpleLogger;
-import org.leavesmc.leavesclip.mixin.MixinURLClassLoader;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,7 +35,7 @@ public record Downloader(FileEntry entry, Path outputDir, Path outputFile, Strin
 
             try {
                 final String filePath = Util.endingSlash(this.baseDir) + this.entry.path();
-                InputStream fileStream = this.useInternal ? MixinURLClassLoader.class.getResourceAsStream(filePath) : null;
+                InputStream fileStream = this.useInternal ? AutoUpdate.getResourceAsStreamFromTargetJar(filePath) : null;
                 if (fileStream == null && this.useInternal) {
                     if (this.originalRootDir != null) {
                         final Path originalFile = originalRootDir.resolve(filePath);

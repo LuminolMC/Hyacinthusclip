@@ -1,5 +1,6 @@
 package moe.luminolmc.hyacinthusclip;
 
+import moe.luminolmc.hyacinthusclip.update.AutoUpdate;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.leavesmc.leavesclip.logger.Logger;
@@ -50,6 +51,11 @@ public final class Hyacinthusclip {
         if (Path.of("").toAbsolutePath().toString().contains("!")) {
             System.err.println("Hyacinthusclip may not run in a directory containing '!'. Please rename the affected folder.");
             System.exit(1);
+        }
+
+        if (!Boolean.getBoolean("hyacinthusclip.disable.auto-update")
+                && !Boolean.getBoolean("leavesclip.disable.auto-update")) {
+            AutoUpdate.init();
         }
 
         final URL[] setupClasspathUrls = setupClasspath();
@@ -192,7 +198,7 @@ public final class Hyacinthusclip {
     }
 
     private static PatchEntry @NotNull [] findPatches() {
-        final InputStream patchListStream = MixinURLClassLoader.class.getResourceAsStream("/META-INF/patches.list");
+        final InputStream patchListStream = AutoUpdate.getResourceAsStreamFromTargetJar("/META-INF/patches.list");
         if (patchListStream == null) {
             return new PatchEntry[0];
         }
@@ -274,7 +280,7 @@ public final class Hyacinthusclip {
     }
 
     private static FileEntry @Nullable [] findFileEntries(final String fileName) {
-        final InputStream libListStream = MixinURLClassLoader.class.getResourceAsStream("/META-INF/" + fileName);
+        final InputStream libListStream = AutoUpdate.getResourceAsStreamFromTargetJar("/META-INF/" + fileName);
         if (libListStream == null) {
             return null;
         }

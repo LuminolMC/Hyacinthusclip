@@ -1,6 +1,6 @@
 package moe.luminolmc.hyacinthusclip;
 
-import org.leavesmc.leavesclip.mixin.MixinURLClassLoader;
+import moe.luminolmc.hyacinthusclip.update.AutoUpdate;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -55,7 +55,7 @@ public class Util {
         } else {
             p = "/" + path;
         }
-        final InputStream stream = MixinURLClassLoader.class.getResourceAsStream(p);
+        final InputStream stream = AutoUpdate.getResourceAsStreamFromTargetJar(p);
         if (stream == null) {
             return null;
         }
