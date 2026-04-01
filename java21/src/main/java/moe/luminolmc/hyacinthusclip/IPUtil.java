@@ -10,31 +10,79 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 
 class IPUtil {
-    protected static String getCountryByIp() {
-        HttpClient client = HttpClient.newHttpClient();
+    private static volatile String cachedCountry = null;
+    private static volatile boolean asyncStarted = false;
 
+    protected static String getCountryByIp() {
+        // 如果已经查到，直接返回
+        if (cachedCountry != null) {
+            return cachedCountry;
+        }
+
+        HttpClient client = HttpClient.newHttpClient();
+        // 主线程最多阻塞 5 秒
         for (IpApi api : IpApi.values()) {
             try {
-                HttpResponse<String> response = client.send(createRequest(api.getUrl()), HttpResponse.BodyHandlers.ofString());
+                HttpResponse<String> response = client.send(createRequest(api.getUrl(), 5), HttpResponse.BodyHandlers.ofString());
                 if (response.statusCode() >= 300 && response.statusCode() < 400) {
                     String redirectUrl = response.headers().firstValue("Location").orElse(null);
                     if (redirectUrl != null) {
-                        response = client.send(createRequest(redirectUrl), HttpResponse.BodyHandlers.ofString());
+                        response = client.send(createRequest(redirectUrl, 5), HttpResponse.BodyHandlers.ofString());
                     }
                 }
                 if (response.statusCode() >= 200 && response.statusCode() < 300) {
-                    return api.processResponse(response.body());
+                    cachedCountry = api.processResponse(response.body());
+                    return cachedCountry;
                 }
             } catch (Exception ignored) {
+                // 超时或其他异常，进入异步
             }
         }
+        // 启动异步后台查
+        startAsyncQuery();
         return "Unknown";
     }
 
-    private static HttpRequest createRequest(String url) {
+    private static synchronized void startAsyncQuery() {
+        if (asyncStarted) return;
+        asyncStarted = true;
+        Thread t = new Thread(() -> {
+            HttpClient client = HttpClient.newHttpClient();
+            for (IpApi api : IpApi.values()) {
+                try {
+                    HttpResponse<String> response = client.send(createRequest(api.getUrl(), 3600), HttpResponse.BodyHandlers.ofString());
+                    if (response.statusCode() >= 300 && response.statusCode() < 400) {
+                        String redirectUrl = response.headers().firstValue("Location").orElse(null);
+                        if (redirectUrl != null) {
+                            response = client.send(createRequest(redirectUrl, 3600), HttpResponse.BodyHandlers.ofString());
+                        }
+                    }
+                    if (response.statusCode() >= 200 && response.statusCode() < 300) {
+                        cachedCountry = api.processResponse(response.body());
+                        return;
+                    }
+                } catch (Exception ignored) {
+                    // 超时或其他异常静默
+                }
+            }
+        }, "IpApi-Async-Query");
+        t.setDaemon(true);
+        // 3600 秒后强制终止线程
+        t.start();
+        new Thread(() -> {
+            try {
+                t.join(3600_000L); // 3600 秒
+                if (t.isAlive()) {
+                    t.stop(); // 强制终止（已知不推荐，但此处为止血临时方案）
+                }
+            } catch (Throwable ignored) {}
+        }, "IpApi-Async-Killer").start();
+    }
+
+    private static HttpRequest createRequest(String url, int timeoutSeconds) {
         return HttpRequest.newBuilder()
                 .uri(URI.create(url))
-                .timeout(Duration.ofSeconds(5))
+                .timeout(Duration.ofSeconds(timeoutSeconds))
                 .build();
     }
 

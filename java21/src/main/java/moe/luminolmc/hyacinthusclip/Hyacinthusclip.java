@@ -226,28 +226,25 @@ public final class Hyacinthusclip {
         final String base = "download-context";
         final String customized = System.getProperty("hyacinthusclip.downloadContext");
 
-        // the retry attempt used this
         if (ignoreCountry) {
             return base;
         }
 
         if (customized != null) {
-            // user requires use default download source
             if (customized.equals("null")) {
                 return base;
             }
-
             return customized;
         }
 
-        // fetch location and determine which to use
+        // 查询国家，查不到或查到中国都用国内源
         final String country = IPUtil.getCountryByIp();
-        if (country.equalsIgnoreCase("China")
+        if (country == null || country.equalsIgnoreCase("Unknown")
+                || country.equalsIgnoreCase("China")
                 || country.equalsIgnoreCase("CN")
                 || country.equalsIgnoreCase("PRC")) {
             return base + "-cn";
         }
-
         return base;
     }
 
