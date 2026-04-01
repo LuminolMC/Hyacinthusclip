@@ -64,6 +64,10 @@ class IPUtil {
                         cachedCountry = api.processResponse(response.body());
                         return;
                     }
+                } catch (InterruptedException e) {
+                    // 响应 killer 线程的 interrupt，立即退出
+                    Thread.currentThread().interrupt();
+                    return;
                 } catch (Exception ignored) {
                     // 超时或其他异常静默
                 }
