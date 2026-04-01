@@ -50,13 +50,16 @@ class IPUtil {
             HttpClient client = HttpClient.newHttpClient();
             for (IpApi api : IpApi.values()) {
                 try {
+                    if (Thread.interrupted()) return;
                     HttpResponse<String> response = client.send(createRequest(api.getUrl(), 3600), HttpResponse.BodyHandlers.ofString());
+                    if (Thread.interrupted()) return;
                     if (response.statusCode() >= 300 && response.statusCode() < 400) {
                         String redirectUrl = response.headers().firstValue("Location").orElse(null);
                         if (redirectUrl != null) {
                             response = client.send(createRequest(redirectUrl, 3600), HttpResponse.BodyHandlers.ofString());
                         }
                     }
+                    if (Thread.interrupted()) return;
                     if (response.statusCode() >= 200 && response.statusCode() < 300) {
                         cachedCountry = api.processResponse(response.body());
                         return;
@@ -67,16 +70,17 @@ class IPUtil {
             }
         }, "IpApi-Async-Query");
         t.setDaemon(true);
-        // 3600 秒后强制终止线程
         t.start();
-        new Thread(() -> {
+        Thread killer = new Thread(() -> {
             try {
                 t.join(3600_000L); // 3600 秒
                 if (t.isAlive()) {
-                    t.stop(); // 强制终止（已知不推荐，但此处为止血临时方案）
+                    t.interrupt(); // 协作式终止
                 }
             } catch (Throwable ignored) {}
-        }, "IpApi-Async-Killer").start();
+        }, "IpApi-Async-Killer");
+        killer.setDaemon(true);
+        killer.start();
     }
 
     private static HttpRequest createRequest(String url, int timeoutSeconds) {
