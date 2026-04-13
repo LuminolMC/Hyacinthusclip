@@ -24,7 +24,8 @@ tasks.jar {
 
     manifest {
         attributes(
-            "Main-Class" to mainClass
+            "Main-Class" to mainClass,
+            "Clip-Version" to project.version
         )
     }
 
