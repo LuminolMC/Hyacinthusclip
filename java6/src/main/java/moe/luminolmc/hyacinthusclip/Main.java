@@ -14,9 +14,9 @@ import java.lang.reflect.Method;
 public final class Main {
 
     public static void main(final String[] args) {
-        if (getJavaVersion() < 21) {
-            System.err.println("Minecraft 1.20.5+ requires running the server with Java 21 or above. " +
-                    "For information on how to update Java, see https://docs.papermc.io/misc/java-install");
+        if (getJavaVersion() < 25) {
+            System.err.println("Minecraft 26.1 and newer requires running the server with Java 25 or above. " +
+                "For information on how to update Java, see https://docs.papermc.io/misc/java-install");
             System.exit(1);
         }
 
